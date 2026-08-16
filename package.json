@@ -1,6 +1,6 @@
 {
   "name": "vscode-extension-helloworld",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Hello World extension for Visual Studio Code",
   "publisher": "int128",
   "main": "index.ts",
@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
-    "@types/vscode": "1.125.0",
+    "@types/node": "26.2.0",
+    "@types/vscode": "^1.100.0",
     "pnpm": "11.20.0",
     "typescript": "7.0.2"
   },
