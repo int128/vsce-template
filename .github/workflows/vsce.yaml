@@ -1,4 +1,4 @@
-name: ts
+name: vsce
 
 on:
   pull_request:
@@ -6,18 +6,20 @@ on:
       - '**/*.ts'
       - '*.json'
       - '*.yaml'
-      - .github/workflows/ts.yaml
+      - .github/workflows/vsce.yaml
   push:
+    tags:
+      - '*.*.*'
     branches:
       - main
     paths:
       - '**/*.ts'
       - '*.json'
       - '*.yaml'
-      - .github/workflows/ts.yaml
+      - .github/workflows/vsce.yaml
 
 jobs:
-  test:
+  package:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
@@ -28,14 +30,17 @@ jobs:
       - run: npm install -g corepack
       - run: corepack enable
       - run: pnpm i
-      - run: pnpm run typecheck
+      - run: pnpm exec vsce package
 
-  generate:
+  publish:
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
+    environment:
+      name: vsce-publisher
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -44,5 +49,9 @@ jobs:
       - run: npm install -g corepack
       - run: corepack enable
       - run: pnpm i
-      - run: pnpm run check
-      - uses: int128/update-generated-files-action@821b0e0f25930c953a1a66e48d71bf0ae6ab15b3 # v2.107.0
+      - uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      - run: pnpm exec vsce publish --azure-credential --no-git-tag-version "$GITHUB_REF_NAME"
